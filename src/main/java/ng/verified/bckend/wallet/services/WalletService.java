@@ -43,6 +43,13 @@ public class WalletService {
 	private DocumentService documentService ;
 	
 	@GET
+	@Path(value = "/wallserv/test")
+	public Response test(){
+		
+		return Response.ok().entity("Backend service hit successfully").build();
+	}
+	
+	@GET
 	@Path(value = "/wallserv")
 	public Response doWalletService(@HeaderParam(value = "Authorization") String bearer, 
 			@HeaderParam(value = "userid") String useridstring){
