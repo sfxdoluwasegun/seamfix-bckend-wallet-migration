@@ -11,6 +11,8 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.bson.Document;
@@ -51,6 +53,7 @@ public class WalletService {
 	
 	@GET
 	@Path(value = "/wallserv")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response doWalletService(@HeaderParam(value = "Authorization") String bearer, 
 			@HeaderParam(value = "userid") String useridstring){
 		
@@ -76,6 +79,7 @@ public class WalletService {
 	
 	@GET
 	@Path(value = "/wallserv/log")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response doWalletServiceLog(@HeaderParam(value = "Authorization") String bearer, 
 			@HeaderParam(value = "userid") String useridstring){
 		

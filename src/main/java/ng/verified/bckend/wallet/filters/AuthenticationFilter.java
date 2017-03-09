@@ -57,6 +57,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 				| IllegalArgumentException e) {
 			// TODO Auto-generated catch block
 			log.error("JWT Validation failure", e);
+			requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+			return;
 		}
 	}
 
