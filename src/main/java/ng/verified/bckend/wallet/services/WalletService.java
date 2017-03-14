@@ -11,6 +11,8 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.bson.Document;
@@ -51,6 +53,7 @@ public class WalletService {
 	
 	@GET
 	@Path(value = "/wallserv")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response doWalletService(@HeaderParam(value = "Authorization") String bearer, 
 			@HeaderParam(value = "userid") String useridstring){
 		
@@ -66,16 +69,16 @@ public class WalletService {
 		}
 		
 		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("Authorization", bearer);
 		jsonObject.addProperty("walletBalance", getClientWalletBalance(clientUser));
 		jsonObject.addProperty("lastTopUp", getClientWalletLastTopup(clientUser));
 		jsonObject.addProperty("averageDailyTransactionCost", getClientWalletAverageDailyTxnCost(clientUser));
 		
-		return Response.ok(new Gson().toJson(jsonObject)).build();
+		return Response.ok(new Gson().toJson(jsonObject)).header("Authorization", bearer).build();
 	}
 	
 	@GET
 	@Path(value = "/wallserv/log")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response doWalletServiceLog(@HeaderParam(value = "Authorization") String bearer, 
 			@HeaderParam(value = "userid") String useridstring){
 		
@@ -93,7 +96,6 @@ public class WalletService {
 		JsonArray jsonArray = new JsonArray();
 		
 		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("Authorization", bearer);
 		
 		List<TransactionLogs> transactionLogs = getTransactionLogByClient(clientUser.getClient());
 		if (transactionLogs != null)
@@ -110,7 +112,7 @@ public class WalletService {
 		
 		jsonObject.add("logs", jsonArray);
 		
-		return Response.ok(new Gson().toJson(jsonObject)).build();
+		return Response.ok(new Gson().toJson(jsonObject)).header("Authorization", bearer).build();
 	}
 
 	/**
@@ -152,7 +154,7 @@ public class WalletService {
 		// TODO Auto-generated method stub
 		
 		BigDecimal cost = queryManager.calculateTotalClientTransactionCost(clientUser);
-		if (cost.compareTo(BigDecimal.ZERO) == 0)
+		if (cost == null || cost.compareTo(BigDecimal.ZERO) == 0)
 			return BigDecimal.ZERO;
 		
 		Timestamp begin = queryManager.getFirstWalletStatementTimestampByClientUserAndTransactiontype(clientUser, TransactionType.DEBIT);
