@@ -98,7 +98,7 @@ public class WalletService {
 	@Path(value = "/wallserv/log")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response doWalletServiceLog(@HeaderParam(value = "Authorization") String bearer, @HeaderParam(value = "userid") String useridstring, 
-			@QueryParam(value = "index") String startPostion, @QueryParam(value = "max") String maxResults, @QueryParam(value = "sort") String sort){
+			@QueryParam(value = "page") String startPostion, @QueryParam(value = "size") String maxResults, @QueryParam(value = "sort") String sort){
 		
 		ClientUser clientUser = null;
 
