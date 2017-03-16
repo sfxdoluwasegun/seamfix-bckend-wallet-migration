@@ -186,7 +186,10 @@ public class WalletService {
 				transactionLog.setServiced(document.getBoolean(Transactions.is_serviced.name()));
 		}
 		
-		transactionLogs.subList(index, max);
+		int maxResults = index + max ;
+		maxResults = (transactionLogs.size() >= maxResults) ? maxResults : transactionLogs.size() ;
+		
+		transactionLogs.subList(index, maxResults);
 		
 		return transactionLogs;
 	}
