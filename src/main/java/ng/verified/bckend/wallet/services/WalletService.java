@@ -173,7 +173,11 @@ public class WalletService {
 			Wrapper wrapper = clientKey.getWrapper();
 			if (wrapper == null)
 				continue;
-			transactionLogs.addAll(queryManager.getTransactionLogsByWrapper(wrapper, sort));
+			
+			List<TransactionLogs> txnLogs = queryManager.getTransactionLogsByWrapper(wrapper, sort);
+			
+			if (txnLogs != null)
+				transactionLogs.addAll(txnLogs);
 		}
 		
 		for (TransactionLogs transactionLog : transactionLogs){
