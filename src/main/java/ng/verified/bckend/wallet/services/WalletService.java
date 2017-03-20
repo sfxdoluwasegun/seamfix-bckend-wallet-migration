@@ -2,7 +2,6 @@ package ng.verified.bckend.wallet.services;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -27,6 +27,7 @@ import ng.verified.bckend.wallet.tools.QueryManager;
 import ng.verified.jpa.Client;
 import ng.verified.jpa.ClientKeys;
 import ng.verified.jpa.ClientUser;
+import ng.verified.jpa.Wallet;
 import ng.verified.jpa.WalletStatement;
 import ng.verified.jpa.Wrapper;
 import ng.verified.jpa.enums.TransactionType;
@@ -51,6 +52,13 @@ public class WalletService {
 		return Response.ok().entity("Backend service hit successfully").build();
 	}
 	
+	/**
+	 * Retrieve basic client {@link Wallet} details.
+	 * 
+	 * @param bearer
+	 * @param useridstring
+	 * @return {@link Response} containing basic properties of wallet data
+	 */
 	@GET
 	@Path(value = "/wallserv")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -76,11 +84,21 @@ public class WalletService {
 		return Response.ok(new Gson().toJson(jsonObject)).header("Authorization", bearer).build();
 	}
 	
+	/**
+	 * Retrieve paginated list of transaction logs for client invocations.
+	 * 
+	 * @param bearer
+	 * @param useridstring
+	 * @param startPostion
+	 * @param maxResults
+	 * @param sort
+	 * @return Response contains a list of {@link TransactionLogs}
+	 */
 	@GET
 	@Path(value = "/wallserv/log")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response doWalletServiceLog(@HeaderParam(value = "Authorization") String bearer, 
-			@HeaderParam(value = "userid") String useridstring){
+	public Response doWalletServiceLog(@HeaderParam(value = "Authorization") String bearer, @HeaderParam(value = "userid") String useridstring, 
+			@QueryParam(value = "page") String startPostion, @QueryParam(value = "size") String maxResults, @QueryParam(value = "sort") String sort){
 		
 		ClientUser clientUser = null;
 
@@ -93,11 +111,29 @@ public class WalletService {
 			return Response.serverError().entity(e.getClass()).build();
 		}
 		
+		if (startPostion == null || startPostion.isEmpty()){
+			startPostion = "0";
+			maxResults = "10";
+		}
+
+		int index = 0;
+		int max = 10;
+
+		JsonObject jsonObject = new JsonObject();
+
+		try {
+			index = Integer.parseInt(startPostion);
+			max = Integer.parseInt(maxResults);
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			log.error("", e);
+			jsonObject.addProperty("message", "Invalid pagination values found in request query parameter");
+			return Response.serverError().header("Authorization", bearer).entity(new Gson().toJson(jsonObject)).build();
+		}
+		
 		JsonArray jsonArray = new JsonArray();
 		
-		JsonObject jsonObject = new JsonObject();
-		
-		List<TransactionLogs> transactionLogs = getTransactionLogByClient(clientUser.getClient());
+		List<TransactionLogs> transactionLogs = getTransactionLogByClient(clientUser.getClient(), index, max, sort);
 		if (transactionLogs != null)
 			for (TransactionLogs transactionLog : transactionLogs){
 				JsonObject element = new JsonObject();
@@ -105,7 +141,7 @@ public class WalletService {
 				element.addProperty("transactionRef", transactionLog.getReferenceNo());
 				element.addProperty("serviceKey", transactionLog.getKey());
 				element.addProperty("serviceName", transactionLog.getServiceName());
-				element.addProperty("lastUsed", transactionLog.getTimestamp().toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+				element.addProperty("lastUsed", transactionLog.getTimestamp().toString());
 				element.addProperty("status", transactionLog.isServiced());
 				jsonArray.add(element);
 			}
@@ -119,9 +155,12 @@ public class WalletService {
 	 * Create TransactionLog data from {@link WalletStatement} and Transaction document in Mongodb using referenceNo shared property.
 	 * 
 	 * @param client
+	 * @param index
+	 * @param max
+	 * @param sort
 	 * @return {@link TransactionLogs}
 	 */
-	private List<TransactionLogs> getTransactionLogByClient(Client client) {
+	private List<TransactionLogs> getTransactionLogByClient(Client client, int index, int max, String sort) {
 		// TODO Auto-generated method stub
 		
 		List<ClientKeys> clientKeys = queryManager.getClientKeysByClient(client);
@@ -132,7 +171,13 @@ public class WalletService {
 		
 		for (ClientKeys clientKey : clientKeys){
 			Wrapper wrapper = clientKey.getWrapper();
-			transactionLogs.addAll(queryManager.getTransactionLogsByWrapper(wrapper));
+			if (wrapper == null)
+				continue;
+			
+			List<TransactionLogs> txnLogs = queryManager.getTransactionLogsByWrapper(wrapper, sort);
+			
+			if (txnLogs != null)
+				transactionLogs.addAll(txnLogs);
 		}
 		
 		for (TransactionLogs transactionLog : transactionLogs){
@@ -140,6 +185,11 @@ public class WalletService {
 			if (document != null)
 				transactionLog.setServiced(document.getBoolean(Transactions.is_serviced.name()));
 		}
+		
+		int maxResults = index + max ;
+		maxResults = (transactionLogs.size() >= maxResults) ? maxResults : transactionLogs.size() ;
+		
+		transactionLogs.subList(index, maxResults);
 		
 		return transactionLogs;
 	}

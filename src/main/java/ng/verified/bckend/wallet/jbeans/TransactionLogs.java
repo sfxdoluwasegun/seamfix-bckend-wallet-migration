@@ -2,6 +2,7 @@ package ng.verified.bckend.wallet.jbeans;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class TransactionLogs {
 	
@@ -9,7 +10,7 @@ public class TransactionLogs {
 	private String key ;
 	private String serviceName ;
 	
-	private Timestamp timestamp ;
+	private Date timestamp ;
 	
 	private boolean serviced ;
 	
@@ -17,6 +18,16 @@ public class TransactionLogs {
 	
 	public TransactionLogs() {
 		// TODO Auto-generated constructor stub
+	}
+	
+	public TransactionLogs(String serviceName, BigDecimal cost, String referenceNo,   
+			Date timestamp) {
+		// TODO Auto-generated constructor stub
+		
+		this.cost = cost;
+		this.referenceNo = referenceNo;
+		this.serviceName = serviceName;
+		this.timestamp = timestamp;
 	}
 	
 	public TransactionLogs(String referenceNo, String key, String serviceName, 
@@ -55,11 +66,11 @@ public class TransactionLogs {
 		this.serviceName = serviceName;
 	}
 
-	public Timestamp getTimestamp() {
+	public Date getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Timestamp timestamp) {
+	public void setTimestamp(Date timestamp) {
 		this.timestamp = timestamp;
 	}
 

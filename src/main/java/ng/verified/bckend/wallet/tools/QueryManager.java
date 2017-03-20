@@ -21,9 +21,10 @@ public class QueryManager extends QueryService {
 	 * Fetch {@link WalletStatement} by {@link Wrapper} relationship.
 	 * 
 	 * @param wrapper
-	 * @return list
+	 * @param sort
+	 * @return {@link TransactionLogs}
 	 */
-	public List<TransactionLogs> getTransactionLogsByWrapper(Wrapper wrapper) {
+	public List<TransactionLogs> getTransactionLogsByWrapper(Wrapper wrapper, String sort) {
 		// TODO Auto-generated method stub
 		
 		CriteriaQuery<TransactionLogs> criteriaQuery = criteriaBuilder.createQuery(TransactionLogs.class);
@@ -49,6 +50,11 @@ public class QueryManager extends QueryService {
 				);
 
 		try {
+			if (sort != null)
+				criteriaQuery.orderBy(criteriaBuilder.asc(root.get(sort)));
+			else
+				criteriaQuery.orderBy(criteriaBuilder.asc(root.get(WalletStatement_.timestamp)));
+			
 			return entityManager.createQuery(criteriaQuery).getResultList();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

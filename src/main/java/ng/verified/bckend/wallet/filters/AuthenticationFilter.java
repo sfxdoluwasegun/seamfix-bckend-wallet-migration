@@ -53,7 +53,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			}
 			
 			requestContext.getHeaders().add("userid", userid);
-		} catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException
+		} catch (ExpiredJwtException e){
+			log.error("ExpiredJwtException");
+			requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+			return;
+		} catch (UnsupportedJwtException | MalformedJwtException | SignatureException
 				| IllegalArgumentException e) {
 			// TODO Auto-generated catch block
 			log.error("JWT Validation failure", e);
