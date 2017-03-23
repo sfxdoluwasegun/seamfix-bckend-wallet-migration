@@ -81,7 +81,7 @@ public class WalletService {
 		jsonObject.addProperty("lastTopUp", getClientWalletLastTopup(clientUser));
 		jsonObject.addProperty("averageDailyTransactionCost", getClientWalletAverageDailyTxnCost(clientUser));
 		
-		return Response.ok(new Gson().toJson(jsonObject)).header("Authorization", bearer).build();
+		return Response.ok(new Gson().toJson(jsonObject)).build();
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class WalletService {
 			// TODO Auto-generated catch block
 			log.error("", e);
 			jsonObject.addProperty("message", "Invalid pagination values found in request query parameter");
-			return Response.serverError().header("Authorization", bearer).entity(new Gson().toJson(jsonObject)).build();
+			return Response.serverError().entity(new Gson().toJson(jsonObject)).build();
 		}
 		
 		JsonArray jsonArray = new JsonArray();
@@ -148,7 +148,7 @@ public class WalletService {
 		
 		jsonObject.add("logs", jsonArray);
 		
-		return Response.ok(new Gson().toJson(jsonObject)).header("Authorization", bearer).build();
+		return Response.ok(new Gson().toJson(jsonObject)).build();
 	}
 
 	/**
